@@ -11,7 +11,7 @@ setup(
     ],
     description="This is check50_rs, a rust extension for check50.",
     license="GPLv3",
-    install_requires=["python-bond>=1.4,<2", "check50>=3,<4"],
+    install_requires=["check50>=3,<4"],
     keywords=["check50_rs", "rust"],
     name="check50_rs",
     python_requires=">= 3.6",
