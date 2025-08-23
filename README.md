@@ -29,7 +29,7 @@ check50:
     - git+https://github.com/Greenfire44Official/check50_rs.git
     [any other dependency your test may require]
 ```
-Then make sure that the tests utilize the methods implemented by check50_rs (currently only one method, the "compiles" method, has been added, and tbh I doubt any other method will be added).
+Then make sure that the tests utilize the methods implemented by check50_rs (currently only one method, the "compile" method, has been added, and tbh I doubt any other method will be added).
 
 That's it! Your tests now use the check50_rs extension!
 
