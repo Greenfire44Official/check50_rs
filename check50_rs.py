@@ -55,15 +55,15 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
     out_flag = f" -o {exe_name} " if exe_name is not None else " "
 
     if CC == "cargo":
-        process_exit_code = run(f"{cc} build{flags}").exit(code=0, timeout=20)
+        process = run(f"{cc} build{flags}")
     else:
-        process_exit_code = run(f"{cc} {files}{out_flag}{flags}").exit(code=0, timeout=20)
+        process = run(f"{cc} {files}{out_flag}{flags}")
 
     # Strip out ANSI codes
-    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", process_exit_code.stdout())  # type: ignore
+    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", process.stdout(timeout=60))  # type: ignore
 
     # Log max_log_lines lines of output in case compilation fails
-    if process_exit_code != 0:
+    if process.exitcode != 0:
         lines = stdout.splitlines()
 
         if len(lines) > max_log_lines:
