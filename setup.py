@@ -15,7 +15,7 @@ setup(
     keywords=["check50_rs", "rust"],
     name="check50_rs",
     python_requires=">= 3.6",
-    url="https://github.com/ArturoBrandt/check50_rs",
+    url="https://github.com/Greenfire44Official/check50_rs",
     version="0.0.1",
     include_package_data=True
 )

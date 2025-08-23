@@ -29,15 +29,11 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
     file specified sans the ``.c`` extension::
 
 
-        check50_rs.compile("foo.rs", "bar.rs") # clang foo.rs bar.rs -o foo -std=c11 -ggdb -lm
+        check50_rs.compile("foo.rs", "bar.rs") # cargo build
 
     Additional CFLAGS may be passed as keyword arguments like so::
 
-        check50_rs.compile("foo.rs", "bar.rs", lcs50=True) # clang foo.rs bar.rs -o foo -std=c11 -ggdb -lm -lcs50
-
-    In the same vein, the default CFLAGS may be overridden via keyword arguments::
-
-        check50_rs.compile("foo.rs", "bar.rs", std="c99", lm=False) # clang foo.rs bar.rs -o foo -std=c99 -ggdb
+        check50_rs.compile("foo.rs", "bar.rs", baz=True) # cargo build -baz
     """
 
     if not files:
@@ -59,15 +55,15 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
     out_flag = f" -o {exe_name} " if exe_name is not None else " "
 
     if CC == "cargo":
-        process = run(f"{cc} build{flags}")
+        process_exit_code = run(f"{cc} build{flags}").exit(code=0, timeout=20)
     else:
-        process = run(f"{cc} {files}{out_flag}{flags}")
+        process_exit_code = run(f"{cc} {files}{out_flag}{flags}").exit(code=0, timeout=20)
 
     # Strip out ANSI codes
-    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", process.stdout())  # type: ignore
+    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", process_exit_code.stdout())  # type: ignore
 
     # Log max_log_lines lines of output in case compilation fails
-    if process.exitcode != 0:
+    if process_exit_code != 0:
         lines = stdout.splitlines()
 
         if len(lines) > max_log_lines:
