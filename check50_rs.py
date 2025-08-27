@@ -1,5 +1,5 @@
 """
-Based on check50's c extension https://github.com/cs50/check50/blob/main/check50/c.py
+Based on check50's C extension https://github.com/cs50/check50/blob/main/check50/c.py
 """
 
 # import contextlib
@@ -16,31 +16,56 @@ CFLAGS = {}
 
 def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
     """
-    Compile Rust source files.
+    Based on check50's C extension compile function
+    Compiles Rust source files.
 
     :param files: filenames to be compiled
-    :param exe_name: name of resulting executable
-    :param cc: compiler to use (:data:`check50_rs.CC` by default)
+    :param exe_name: name of resulting executable (optional)
+    :param cc: compiler to use (default: "cargo")
     :param cflags: additional flags to pass to the compiler
     :raises check50.Failure: if compilation failed (i.e., if the compiler returns a non-zero exit status).
     :raises RuntimeError: if no filenames are specified
 
-    If ``exe_name`` is None, :func:`check50_rs.compile` will default to the first
-    file specified sans the ``.c`` extension::
+    If `exe_name` is None, this function will attempt to find the executable name from the provided files.
+    (.rs or Cargo.toml)
 
-
-        check50_rs.compile("foo.rs", "bar.rs") # cargo build
+        check50_rs.compile("foo.rs") # cargo build
 
     Additional CFLAGS may be passed as keyword arguments like so::
 
-        check50_rs.compile("foo.rs", "bar.rs", baz=True) # cargo build -baz
+        check50_rs.compile("foo.rs", baz=True) # cargo build -baz
+        
+    Compiler can be changed like so::
+        check50_rs.compile("foo.rs", exe_name="foo", cc="rustc", baz="bar") # rustc -o foo foo.rs -baz=bar
     """
 
     if not files:
         raise RuntimeError(_("compile requires at least one file"))  # type: ignore
 
-    if exe_name is None and files[0].endswith(".rs"):
-        exe_name = Path(files[0]).stem
+    if exe_name is None:
+        rs_file = next((f for f in files if f.endswith(".rs")), None)
+        cargo = next((f for f in files if f == "Cargo.toml"), None)
+        if rs_file:
+            exe_name = Path(rs_file).stem
+        elif cargo:
+            content = Path(cargo).read_text()
+            match = re.search(
+                r'^\s*\[package\][^\[]*?\s*name\s*=\s*["\']([^"\']+)["\']',
+                content,
+                re.MULTILINE | re.DOTALL,
+            )
+            if match:
+                exe_name = match.group(1)
+            else:
+                raise RuntimeError(
+                    """Could not determine executable name.
+                    No exe_name provided and could not find .rs and could not parse Cargo.toml"""
+                )
+        else:
+            raise RuntimeError(
+                """Could not determine executable name.
+                No exe_name provided and could not find .rs file nor Cargo.toml"""
+            )
 
     files = " ".join(files)
 
@@ -73,3 +98,27 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
             log(line)
 
         raise Failure("code failed to compile")
+
+
+def run_and_wait(
+    cmd,
+    timeout=2,
+    log_message="checking that program did not exit...",
+    failure_message="Program exited when it should have waited for input.",
+):
+    """
+    Works like check50.reject().
+
+    Runs a command and checks that it does NOT exit within the specified timeout.
+    Logs a custom message instead of the default hardcoded message 'checking that input was rejected' from check50.reject().
+
+    :raises check50.Failure: with a custom failure message if the program exits.
+    """
+    process = run(cmd)
+    log(log_message)
+    try:
+        process.exit(timeout=timeout)
+        raise Failure(failure_message)
+    except Exception:
+        # If a timeout occurs, this is expected (program did not exit)
+        pass

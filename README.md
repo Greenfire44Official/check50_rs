@@ -1,3 +1,4 @@
+
 # check50_rs: Rust extension for check50
 
 An extension for check50 to add support for checking Rust programs.  
@@ -25,32 +26,32 @@ This extension is used by [check50-rust-checks](https://github.com/Greenfire44Of
 ### Installation & Usage
 
 1. **Get some tests**
-   - You can use [check50-rust-checks](https://github.com/Greenfire44Official/check50-rust-checks):
-     ```bash
-     git clone https://github.com/Greenfire44Official/check50-rust-checks.git
-     ```
+  - You can use [check50-rust-checks](https://github.com/Greenfire44Official/check50-rust-checks):
+    ```bash
+    git clone https://github.com/Greenfire44Official/check50-rust-checks.git
+    ```
   - You can find other tests someone else has made.
   - You can make your own tests.
 
 2. **Add the extension to the test's dependencies**
   Ensure your test's `.cs50.yaml` includes:
-   ```yaml
-   check50: 
-     [other keys]
-     dependencies:
-       - git+https://github.com/Greenfire44Official/check50_rs.git
-       [any other dependency your test may require]
-   ```
+  ```yaml
+  check50: 
+    [other keys]
+    dependencies:
+      - git+https://github.com/Greenfire44Official/check50_rs.git
+      [any other dependency your test may require]
+  ```
 
 3. **Run check50 locally with the `--dev` flag:**
-   ```bash
-   cs50 --dev [path to the folder of the test you want to run]
-   ```
-   - The path must be to the folder, **not** to `__init__.py` or `.cs50.yaml`.
-   - Example for mario-more:
-     ```bash
-     cs50 --dev [path to check50-rust-checks]/pset1/mario/more
-     ```
+  ```bash
+  cs50 --dev [path to the folder of the test you want to run]
+  ```
+  - The path must be to the folder, **not** to `__init__.py` or `.cs50.yaml`.
+  - Example for mario-more:
+    ```bash
+    cs50 --dev [path to check50-rust-checks]/pset1/mario/more
+    ```
 
 ---
 
@@ -85,3 +86,10 @@ If you still have problems, you can submit an issue and I'll try my best to help
 ## Example Usage
 
 See [check50-rust-checks](https://github.com/Greenfire44Official/check50-rust-checks) for example tests and usage instructions. You can clone that repository and run its tests locally to see how this extension works in practice.
+
+## Functionality
+### check50_rs.compile()
+Compiles Rust packages with cargo, optionally allowing the use of rustc. Raises check50.Failure if the code fails to compile.
+### check50_rs.run_and_wait()
+Runs a command and waits until a timeout. If the program exits before the timeout a check50.Failure is raised.
+
