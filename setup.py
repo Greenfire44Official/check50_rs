@@ -16,6 +16,6 @@ setup(
     name="check50_rs",
     python_requires=">= 3.6",
     url="https://github.com/Greenfire44Official/check50_rs",
-    version="0.0.1",
+    version="0.1.0",
     include_package_data=True
 )

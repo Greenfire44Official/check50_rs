@@ -14,18 +14,23 @@ CC = "cargo"
 CFLAGS = {}
 
 
-def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
+def compile(*files, exe_name=None, cc=CC, max_log_lines=50, timeout=60, **cflags):
     """
     Based on check50's C extension compile function
     Compiles Rust source files.
 
     :param files: filenames to be compiled
-    :param exe_name: name of resulting executable (optional)
-    :param cc: compiler to use (default: "cargo")
+    :param exe_name: name of resulting executable. Optional
+    :param cc: compiler to use. Default: cargo
+    :param max_log_lines: maximum lines to be logged when compilation fails. Default: 50
+    :param timeout: maximum allowed compilation time. Default: 60
     :param cflags: additional flags to pass to the compiler
     :raises check50.Failure: if compilation failed (i.e., if the compiler returns a non-zero exit status).
     :raises RuntimeError: if no filenames are specified
 
+    If cc is "cargo" (default) the compilation will ignore the provided 
+    `files` and `exe_name` since cargo takes care of that through Cargo.toml
+    
     If `exe_name` is None, this function will attempt to find the executable name from the provided files.
     (.rs or Cargo.toml)
 
@@ -85,7 +90,7 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
         process = run(f"{cc} {files}{out_flag}{flags}")
 
     # Strip out ANSI codes
-    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", process.stdout(timeout=60))  # type: ignore
+    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", process.stdout(timeout=timeout))  # type: ignore
 
     # Log max_log_lines lines of output in case compilation fails
     if process.exitcode != 0:
@@ -107,11 +112,19 @@ def run_and_wait(
     failure_message="Program exited when it should have waited for input.",
 ):
     """
-    Works like check50.reject().
-
     Runs a command and checks that it does NOT exit within the specified timeout.
+    
+    Useful for checking if a program is waiting for input when first running the program.
+    
     Logs a custom message instead of the default hardcoded message 'checking that input was rejected' from check50.reject().
+    
+    Works similarly to check50.reject(), but with custom log messages.
 
+    :param cmd: command to run
+    :param timeout: time to wait for program to NOT exit.
+    :param log_message: message to be logged before command is run
+    :param failure_message: check50.Failure message if program exits before the timeout.
+    
     :raises check50.Failure: with a custom failure message if the program exits.
     """
     process = run(cmd)
